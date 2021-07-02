@@ -10,8 +10,7 @@ NETWORKS = ["bsc", "polygon"]
 def create_db_connection(db_file):
     return sqlite3.connect(db_file)
 
-def write_to_db(rows):
-    conn = sqlite3.connect('vfat_db.db')
+def write_to_db(conn, rows):
     cur = conn.cursor()
 
     for row in rows:
@@ -47,9 +46,10 @@ def parse_js(file, network):
     return parsed_rows
 
 def main():
-    create_db_connection('vfat_services.db')
     file = get_file("polygon")
     rows = parse_js(file, "polygon")
-    write_to_db(rows)
+
+    conn = create_db_connection('vfat_services.db')
+    write_to_db(conn, rows)
 if __name__ == "__main__":
     main()
