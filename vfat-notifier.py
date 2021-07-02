@@ -10,8 +10,7 @@ NETWORKS = ["bsc", "polygon"]
 def create_db_connection(db_file):
     return sqlite3.connect(db_file)
 
-def write_to_db(rows):
-    conn = sqlite3.connect('vfat_db.db')
+def write_to_db(conn, rows):
     cur = conn.cursor()
 
     for row in rows:
@@ -29,14 +28,12 @@ def get_file(network):
     url = 'https://raw.githubusercontent.com/vfat-tools/vfat-tools/master/src/static/js/{}.js'.format(network)
 
     req = requests.get(url)
-    return str(req.content)
+    return req.content.decode('utf-8')
 
 def parse_js(file, network):
-    row_search = re.search(r"rows:(.*)]", file)
-    ## Remove all white space, \\n and \\'
-    rows = re.sub(r"[\\'\\n]*", "", file[row_search.start()+7:row_search.end()-1])
-    ## Splits string lists into python lists
-    row_list = re.split(r"\[(.*?)\]", rows)
+    rows = re.sub(r"[\s\n\t']*", "", file)
+    row_search = re.search(r"rows:(.*)]", rows)
+    row_list = re.split(r"\[(.*?)\]", row_search.group(0)[7::])
 
     parsed_rows = []
     for row in row_list:
@@ -47,9 +44,11 @@ def parse_js(file, network):
     return parsed_rows
 
 def main():
-    create_db_connection('vfat_services.db')
     file = get_file("polygon")
     rows = parse_js(file, "polygon")
-    write_to_db(rows)
+
+    conn = create_db_connection('vfat_services.db')
+    write_to_db(conn, rows)
+
 if __name__ == "__main__":
     main()
