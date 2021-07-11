@@ -1,7 +1,8 @@
-import src.data.db as db
+from src.data.database import Database
 
 def migrate():
     try:
+        db = Database()
         conn = db.connect()
         cur = conn.cursor()
 
@@ -15,7 +16,7 @@ def migrate():
 
         return True
     except Exception as e:
-        print(e)
+        print('Migration Failed: {}'.format(e))
 
         return False
 
@@ -34,8 +35,8 @@ def recipients():
     return '''
         CREATE TABLE if not exists recipients(
         id INTEGER PRIMARY KEY,
-        fname TEXT NOT NULL,
-        email TEXT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE,
         inserted_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
         '''
